@@ -34,7 +34,7 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(os.path.join(PASTA, ".env"))
 
 import config  # noqa: E402
-from maya import estado  # noqa: E402
+from maya import estado, ferramentas  # noqa: E402
 from maya.cerebro import Cerebro  # noqa: E402
 from maya.falar import bipe, falar  # noqa: E402
 
@@ -88,6 +88,8 @@ def modo_texto(cerebro):
             resposta = cerebro.responder(pedido)
             falar(resposta)
             estado.mudar("oculto")
+            if ferramentas.pedido_para_fechar:
+                break
     sair()
 
 
@@ -117,6 +119,8 @@ def modo_voz(cerebro):
             print(f"Você: {pedido}")
             estado.mudar("pensando", pedido)
             falar(cerebro.responder(pedido))
+            if ferramentas.pedido_para_fechar:
+                sair()
         except Exception:
             traceback.print_exc()
             falar("Ops, tive um problema. Tente de novo.")

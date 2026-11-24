@@ -173,6 +173,15 @@ def desligar_computador(acao):
     return resposta
 
 
+pedido_para_fechar = False
+
+
+def fechar_maya():
+    global pedido_para_fechar
+    pedido_para_fechar = True  # o main.py fecha a Maya depois que ela se despedir
+    return "A Maya vai fechar depois de se despedir."
+
+
 # ---------------------------------------------------------------------------
 # Descrições para a IA (formato JSON Schema)
 # ---------------------------------------------------------------------------
@@ -273,7 +282,17 @@ FERRAMENTAS = [
     },
 ]
 
+FERRAMENTAS.append(
+    {
+        "name": "fechar_maya",
+        "description": "Fecha a própria Maya (o assistente). Use quando o usuário pedir para sair, "
+        "fechar, encerrar ou desligar a Maya, ou se despedir dizendo tchau.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    }
+)
+
 FUNCOES = {
+    "fechar_maya": fechar_maya,
     "ver_hora": ver_hora,
     "abrir_programa": abrir_programa,
     "abrir_site": abrir_site,

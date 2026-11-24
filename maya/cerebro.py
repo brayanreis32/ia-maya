@@ -10,7 +10,9 @@ Responda sempre em português do Brasil, de forma curta e natural, como numa con
 uma ou duas frases, sem listas, sem markdown, sem emojis e sem links.
 Quando o pedido puder ser feito por uma ferramenta, use a ferramenta em vez de explicar como fazer.
 Para saber a hora ou a data, use a ferramenta ver_hora.
-Se não houver ferramenta para o pedido, diga com honestidade que ainda não sabe fazer isso."""
+Se não houver ferramenta para o pedido, diga com honestidade que ainda não sabe fazer isso.
+O pedido vem do reconhecimento de voz e pode ter palavras erradas: interprete pelo som mais provável
+(por exemplo, "Saíra" ou "Sai" provavelmente é "sair") antes de dizer que não entendeu."""
 
 # A conversa recomeça depois de alguns minutos sem falar com a Maya
 MINUTOS_PARA_ESQUECER = 5
