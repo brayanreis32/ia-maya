@@ -2,6 +2,8 @@
 
 A Maya fica escutando em segundo plano. Quando você diz **"Maya"**, ela apita, ouve o seu pedido, responde em voz alta e executa a tarefa.
 
+Ao ser chamada, aparece uma bolha animada na parte de baixo da tela: **azul** enquanto ouve (cresce com a sua voz), **roxa** enquanto pensa e **ciano** enquanto fala (pulsa com a voz dela). Quando termina, a bolha some. Para fechar a Maya, clique com o botão direito no ícone azul perto do relógio e escolha **Sair**.
+
 | Peça | Ferramenta | Funciona offline? |
 |---|---|---|
 | Palavra de ativação | Vosk (modelo pequeno em português) | Sim |
@@ -64,12 +66,12 @@ iniciar_maya.bat
 ```
 Diga **"Maya"**, espere o apito e fale o pedido. Na primeira vez, o Whisper baixa sozinho (cerca de 500 MB).
 
-### 6. Iniciar junto com o Windows (opcional)
+### 6. Rodar sem a tela preta e iniciar com o Windows
 Com o ambiente ativado (`.venv\Scripts\activate`):
 ```bat
 python instalar_inicializacao.py
 ```
-Ela passa a rodar escondida sempre que o Windows ligar. As mensagens vão para `maya.log`. Para desfazer: `python instalar_inicializacao.py remover`.
+Isso cria o atalho **Maya** na Área de Trabalho, faz ela iniciar sozinha quando o Windows ligar e já abre a Maya escondida. As mensagens vão para `maya.log`. Para desfazer: `python instalar_inicializacao.py remover`.
 
 ---
 

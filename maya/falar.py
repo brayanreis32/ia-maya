@@ -6,6 +6,7 @@ import threading
 import wave
 
 import config
+from maya import estado
 
 _voz_piper = None
 _motor_windows = None
@@ -22,12 +23,22 @@ def _carregar_piper():
 
 
 def _tocar_wav(caminho):
+    import numpy as np
     import sounddevice as sd
     import soundfile as sf
 
     dados, taxa = sf.read(caminho, dtype="float32")
+    if dados.ndim > 1:
+        dados = dados.mean(axis=1)
+    # Volume a cada 30 ms, para a animação pulsar junto com a voz
+    passo = int(taxa * 0.03)
+    blocos = len(dados) // passo
+    if blocos:
+        rms = np.sqrt(np.mean(dados[: blocos * passo].reshape(blocos, passo) ** 2, axis=1))
+        estado.comecar_fala(np.clip(rms / (rms.max() + 1e-6) * 1.1, 0, 1), 0.03)
     sd.play(dados, taxa)
     sd.wait()
+    estado.terminar_fala()
 
 
 def _falar_windows(texto):
@@ -35,6 +46,12 @@ def _falar_windows(texto):
     import pyttsx3
 
     if _motor_windows is None:
+        try:  # a voz do Windows precisa disso quando roda fora da thread principal
+            import pythoncom
+
+            pythoncom.CoInitialize()
+        except ImportError:
+            pass
         _motor_windows = pyttsx3.init()
         for voz in _motor_windows.getProperty("voices"):
             if "portug" in voz.name.lower() or "brazil" in voz.name.lower() or "maria" in voz.name.lower():
@@ -51,7 +68,13 @@ def falar(texto):
         return
     print(f"Maya: {texto}")
     with _trava:
-        _falar(texto)
+        anterior = estado.atual
+        estado.mudar("falando", texto)
+        try:
+            _falar(texto)
+        finally:
+            estado.terminar_fala()
+            estado.mudar(anterior)
 
 
 def bipe():

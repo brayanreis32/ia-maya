@@ -8,6 +8,7 @@ import numpy as np
 import sounddevice as sd
 
 import config
+from maya import estado
 
 TAXA = 16000  # Vosk e Whisper trabalham com 16 kHz mono
 PASTA_VOSK = "modelos/vosk-model-small-pt-0.3"
@@ -59,6 +60,7 @@ def gravar_pedido():
             bloco, _ = stream.read(tamanho)
             blocos.append(bloco.copy())
             volume = np.sqrt(np.mean(bloco.astype(np.float32) ** 2))
+            estado.nivel = min(1.0, volume / 3000)  # faz a bolha crescer com a sua voz
             if volume > config.LIMIAR_SILENCIO:
                 falou = True
                 silencio = 0.0

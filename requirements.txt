@@ -9,3 +9,5 @@ soundfile>=0.12
 numpy>=1.26
 requests>=2.31
 python-dotenv>=1.0
+pystray>=0.19
+pillow>=10
