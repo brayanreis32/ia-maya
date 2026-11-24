@@ -11,3 +11,4 @@ requests>=2.31
 python-dotenv>=1.0
 pystray>=0.19
 pillow>=10
+edge-tts>=7.0

@@ -132,7 +132,13 @@ def main():
     icone_bandeja()
 
     try:
-        from maya.animacao import Animacao
+        estilo = getattr(config, "ANIMACAO", "avatar")
+        if estilo == "nenhuma":
+            raise RuntimeError("desligada no config.py")
+        if estilo == "bolha":
+            from maya.animacao import Animacao
+        else:
+            from maya.avatar import Avatar as Animacao
 
         animacao = Animacao()
     except Exception as erro:  # sem tela (ou sem tkinter): funciona sem animação

@@ -2,14 +2,16 @@
 
 A Maya fica escutando em segundo plano. Quando você diz **"Maya"**, ela apita, ouve o seu pedido, responde em voz alta e executa a tarefa.
 
-Ao ser chamada, aparece uma bolha animada na parte de baixo da tela: **azul** enquanto ouve (cresce com a sua voz), **roxa** enquanto pensa e **ciano** enquanto fala (pulsa com a voz dela). Quando termina, a bolha some. Para fechar a Maya, clique com o botão direito no ícone azul perto do relógio e escolha **Sair**.
+Ao ser chamada, a **personagem da Maya** aparece no canto inferior direito da tela, de headset, atrás de um notebook. Ela olha para você e mostra ondas de som enquanto ouve (azul), digita no notebook enquanto pensa (roxo) e mexe a boca junto com a voz quando fala (ciano). Depois ela desce e some. Para trocar pela bolha animada, use `ANIMACAO = "bolha"` no `config.py`. Para fechar a Maya, clique com o botão direito no ícone azul perto do relógio e escolha **Sair**.
+
+A voz é feminina e neural (Francisca, a mesma do Microsoft Edge), gratuita, mas precisa de internet. Sem internet, ela usa a voz offline do Piper.
 
 | Peça | Ferramenta | Funciona offline? |
 |---|---|---|
 | Palavra de ativação | Vosk (modelo pequeno em português) | Sim |
 | Voz para texto | faster-whisper | Sim |
 | Cérebro | Ollama (local) **ou** Claude (nuvem) | Ollama sim, Claude não |
-| Texto para voz | Piper, voz pt-BR "faber" (usa a voz do Windows se o Piper falhar) | Sim |
+| Texto para voz | Voz feminina "Francisca" (edge-tts); sem internet, usa o Piper | Francisca não, Piper sim |
 | Ações | `maya/ferramentas.py` | Quase todas |
 
 **O que ela já sabe fazer:** dizer a hora e a data, abrir programas e sites, pesquisar no Google, tocar música no YouTube, buscar no Spotify, mudar o volume, ver o clima, criar lembretes e desligar, reiniciar ou bloquear o PC.

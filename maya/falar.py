@@ -87,7 +87,24 @@ def bipe():
     sd.wait()
 
 
+def _falar_edge(texto):
+    """Voz neural feminina da Microsoft (a mesma do Edge). Grátis, mas precisa de internet."""
+    import edge_tts
+
+    arquivo = os.path.join(tempfile.gettempdir(), "maya_fala.mp3")
+    voz = getattr(config, "VOZ_EDGE", "pt-BR-FranciscaNeural")
+    velocidade = getattr(config, "VELOCIDADE_VOZ", "+5%")
+    edge_tts.Communicate(texto, voz, rate=velocidade).save_sync(arquivo)
+    _tocar_wav(arquivo)
+
+
 def _falar(texto):
+    if getattr(config, "MOTOR_VOZ", "edge") == "edge":
+        try:
+            _falar_edge(texto)
+            return
+        except Exception as erro:
+            print(f"[aviso] Voz online falhou ({erro}); usando a voz offline.")
     try:
         voz = _carregar_piper()
         if voz is not None:

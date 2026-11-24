@@ -38,9 +38,23 @@ TEMPO_MAXIMO_FALA = 15
 LIMIAR_SILENCIO = 500
 
 # ---------------------------------------------------------------------------
-# Texto para voz (Piper)
+# Voz da Maya
 # ---------------------------------------------------------------------------
+# "edge"  = voz feminina neural, bem natural (grátis, precisa de internet)
+# "piper" = voz offline (masculina). Também é usada se a internet cair.
+MOTOR_VOZ = "edge"
+# Vozes femininas em português: "pt-BR-FranciscaNeural" ou "pt-BR-ThalitaMultilingualNeural"
+VOZ_EDGE = "pt-BR-FranciscaNeural"
+# Velocidade da fala: "+0%" normal, "+15%" mais rápida, "-10%" mais devagar
+VELOCIDADE_VOZ = "+5%"
+
 VOZ_PIPER = "modelos/pt_BR-faber-medium.onnx"
+
+# ---------------------------------------------------------------------------
+# Animação na tela
+# ---------------------------------------------------------------------------
+# "avatar" = personagem no notebook (canto da tela) | "bolha" = bolha animada | "nenhuma"
+ANIMACAO = "avatar"
 
 # ---------------------------------------------------------------------------
 # Ações
