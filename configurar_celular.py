@@ -42,12 +42,11 @@ if not nome:
     sys.exit("Não consegui descobrir o nome deste PC no Tailscale. Ele está logado?")
 
 print("Ligando o acesso seguro (HTTPS) do celular até a Maya...")
-servir = rodar("serve", "--bg", str(PORTA))
-saida = (servir.stdout + servir.stderr).strip()
+print("Se aparecer um link abaixo, abra-o no navegador e ative o HTTPS. Depois volte aqui e espere.\n")
+# Sem capturar a saída: assim o link para ativar o HTTPS aparece na tela
+servir = subprocess.run([TAILSCALE, "serve", "--bg", str(PORTA)])
 if servir.returncode != 0:
-    print(saida)
-    print("\nSe apareceu um link acima, abra-o, ative o HTTPS para a sua rede e rode este script de novo.")
-    sys.exit(1)
+    sys.exit("\nNão deu certo. Ative o HTTPS pelo link acima (se apareceu) e rode este script de novo.")
 
 endereco = f"https://{nome}"
 print(f"\nPronto! O app da Maya está em:\n\n    {endereco}\n")
