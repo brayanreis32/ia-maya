@@ -18,6 +18,10 @@ MODELO_OLLAMA = "qwen2.5:3b"
 # Para gastar bem menos, troque por "claude-haiku-5-5".
 MODELO_CLAUDE = "claude-opus-5-5"
 
+# Pesquisa na internet (notícias, resultados, preços). Só funciona com o cérebro "claude".
+# Custa cerca de 1 centavo de dólar por pesquisa, além do uso normal.
+PESQUISA_WEB = True
+
 # ---------------------------------------------------------------------------
 # Palavra de ativação
 # ---------------------------------------------------------------------------
@@ -34,6 +38,8 @@ MODELO_WHISPER = "small"
 SILENCIO_PARA_PARAR = 1.2
 # Tempo máximo de uma frase (segundos)
 TEMPO_MAXIMO_FALA = 15
+# Depois de responder, ela continua ouvindo por alguns segundos (sem precisar dizer "Maya")
+CONVERSA_CONTINUA = True
 # Sensibilidade ao silêncio. Aumente se ela nunca parar de gravar (ambiente barulhento).
 LIMIAR_SILENCIO = 500
 
@@ -55,6 +61,12 @@ VOZ_PIPER = "modelos/pt_BR-faber-medium.onnx"
 # ---------------------------------------------------------------------------
 # "avatar" = personagem no notebook (canto da tela) | "bolha" = bolha animada | "nenhuma"
 ANIMACAO = "avatar"
+
+# ---------------------------------------------------------------------------
+# App no celular (veja "configurar_celular.py" e o README)
+# ---------------------------------------------------------------------------
+APP_CELULAR = True
+PORTA_CELULAR = 8765
 
 # ---------------------------------------------------------------------------
 # Ações

@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Maya</title>
+<meta name="theme-color" content="#0b0b12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maya">
+<link rel="manifest" href="/app/manifest.json">
+<link rel="apple-touch-icon" href="/app/icone-180.png">
+<link rel="icon" href="/app/icone-192.png">
+<style>
+  :root {
+    --fundo: #0b0b12;
+    --painel: #17171f;
+    --painel2: #20202b;
+    --texto: #f4f4f6;
+    --suave: #9b9bab;
+    --cor: #3b82f6;
+    --contorno: #2a1f3d;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--fundo); color: var(--texto);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
+  body { display: flex; flex-direction: column; overflow: hidden;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 0; }
+  header h1 { font-size: 20px; margin: 0; font-weight: 700; letter-spacing: .2px; }
+  .status { font-size: 12px; color: var(--suave); display: flex; align-items: center; gap: 6px; }
+  .ponto { width: 8px; height: 8px; border-radius: 50%; background: #71717a; }
+  .online .ponto { background: #22c55e; }
+  .botoes-topo { display: flex; gap: 8px; }
+  .icone-btn { width: 38px; height: 38px; border-radius: 12px; border: 0; background: var(--painel);
+    color: var(--texto); font-size: 18px; display: grid; place-items: center; }
+
+  #palco { flex: 0 0 auto; display: grid; place-items: center; padding: 4px 0 0; position: relative; }
+  #avatar { width: min(62vw, 250px); height: auto; overflow: visible; }
+  #legenda { min-height: 20px; font-size: 13px; color: var(--suave); text-align: center; padding: 0 20px 6px; }
+
+  #conversa { flex: 1 1 auto; overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 8px;
+    -webkit-overflow-scrolling: touch; }
+  .msg { max-width: 82%; padding: 9px 13px; border-radius: 18px; font-size: 15px; line-height: 1.35;
+    word-wrap: break-word; white-space: pre-wrap; }
+  .eu { align-self: flex-end; background: #3b82f6; color: white; border-bottom-right-radius: 6px; }
+  .maya { align-self: flex-start; background: var(--painel2); border-bottom-left-radius: 6px; }
+  .aviso { align-self: center; background: #3f2d0e; color: #fde68a; font-size: 13px; }
+  .msg a { color: #93c5fd; }
+
+  footer { display: flex; align-items: center; gap: 8px; padding: 8px 12px 10px; }
+  #campo { flex: 1; min-width: 0; height: 44px; border-radius: 22px; border: 1px solid #2c2c38; background: var(--painel);
+    color: var(--texto); padding: 0 16px; font-size: 16px; outline: none; }
+  #enviar { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--painel2); color: var(--texto);
+    font-size: 18px; }
+  #mic { width: 64px; height: 64px; border-radius: 50%; border: 0; background: var(--cor); color: white;
+    display: grid; place-items: center; box-shadow: 0 6px 22px color-mix(in srgb, var(--cor) 45%, transparent);
+    transition: transform .15s, background .3s; }
+  #mic:active { transform: scale(.94); }
+  #mic.gravando { background: #ef4444; animation: pulsar 1.2s infinite; }
+  @keyframes pulsar { 50% { box-shadow: 0 0 0 12px rgba(239,68,68,.15); } }
+  #mic svg { width: 28px; height: 28px; }
+
+  /* Painel de lembretes */
+  #painel { position: fixed; inset: auto 0 0 0; background: var(--painel); border-radius: 20px 20px 0 0;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); transform: translateY(105%);
+    transition: transform .25s; max-height: 70vh; overflow-y: auto; z-index: 5; }
+  #painel.aberto { transform: none; }
+  #painel h2 { margin: 0 0 12px; font-size: 18px; }
+  .lembrete { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid #2a2a35; font-size: 15px; }
+  .lembrete small { color: var(--suave); display: block; }
+  .lembrete button { border: 0; background: #3a1d1d; color: #fca5a5; border-radius: 10px; padding: 6px 10px; }
+  .dica { color: var(--suave); font-size: 14px; line-height: 1.45; }
+  .botao-largo { width: 100%; height: 46px; border: 0; border-radius: 14px; background: var(--cor); color: white;
+    font-size: 16px; font-weight: 600; margin-top: 12px; }
+
+  /* Avatar */
+  #avatar .respira { animation: respirar 3.2s ease-in-out infinite; }
+  @keyframes respirar { 50% { transform: translateY(-1.5px); } }
+  #olhos { transform-origin: 140px 114px; animation: piscar 4.5s infinite; }
+  @keyframes piscar { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(.08); } }
+  #pupilas { transition: transform .35s; }
+  .pensando #pupilas { transform: translateY(5px); }
+  .pensando #cabeca { transform: translateY(2.5px); transition: transform .35s; }
+  #cabeca { transition: transform .35s; }
+  .luz { fill: var(--cor); transition: fill .4s; }
+  #logo { fill: var(--cor); transition: fill .4s; }
+  .pensando #logo { animation: brilho .5s infinite alternate; }
+  @keyframes brilho { to { opacity: .55; } }
+  #ondas { opacity: 0; transition: opacity .2s; }
+  .ouvindo #ondas { opacity: 1; }
+  #ondas path { stroke: var(--cor); }
+  #codigos text { opacity: 0; fill: var(--cor); font: 13px ui-monospace, Menlo, monospace; }
+  .pensando #codigos text { animation: subir 1.4s linear infinite; }
+  #codigos text:nth-child(2) { animation-delay: .35s !important; }
+  #codigos text:nth-child(3) { animation-delay: .7s !important; }
+  #codigos text:nth-child(4) { animation-delay: 1.05s !important; }
+  @keyframes subir { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-46px); } }
+  .pensando #ombros { animation: digitar .14s infinite alternate; transform-origin: 140px 200px; }
+  @keyframes digitar { to { transform: rotate(.8deg); } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Maya</h1>
+    <div class="status" id="status"><span class="ponto"></span><span id="status-texto">conectando…</span></div>
+  </div>
+  <div class="botoes-topo">
+    <button class="icone-btn" id="btn-som" aria-label="Ligar ou desligar a voz">🔊</button>
+    <button class="icone-btn" id="btn-lembretes" aria-label="Lembretes e notificações">⏰</button>
+  </div>
+</header>
+
+<div id="palco">
+  <svg id="avatar" viewBox="40 20 200 236" aria-hidden="true">
+    <g class="respira">
+      <g id="ombros">
+        <polygon points="72,240 88,168 192,168 208,240" fill="#4f46e5" stroke="#2a1f3d" stroke-width="2"/>
+        <ellipse cx="140" cy="166" rx="14" ry="7" fill="#f8d6be" stroke="#2a1f3d" stroke-width="2"/>
+      </g>
+      <g id="cabeca">
+        <ellipse cx="140" cy="96" rx="66" ry="64" fill="#4a3470" stroke="#2a1f3d" stroke-width="2"/>
+        <rect x="74" y="96" width="132" height="56" rx="22" fill="#4a3470" stroke="#2a1f3d" stroke-width="2"/>
+        <ellipse cx="140" cy="108" rx="52" ry="50" fill="#f8d6be" stroke="#2a1f3d" stroke-width="2"/>
+        <path d="M84,92 A56,50 0 0 1 196,92 Z" fill="#4a3470"/>
+        <ellipse cx="106" cy="91" rx="14" ry="11" fill="#4a3470"/>
+        <ellipse cx="128" cy="91" rx="14" ry="11" fill="#4a3470"/>
+        <ellipse cx="152" cy="91" rx="14" ry="11" fill="#4a3470"/>
+        <ellipse cx="174" cy="91" rx="14" ry="11" fill="#4a3470"/>
+        <path d="M87.4,74.9 A56,50 0 0 1 192.6,74.9" fill="none" stroke="#2a1f3d" stroke-width="2"/>
+        <path d="M111.2,59.9 A20,15 0 0 1 140,52" fill="none" stroke="#684f96" stroke-width="3" stroke-linecap="round"/>
+        <g id="olhos">
+          <ellipse cx="120" cy="114" rx="9" ry="11" fill="#fff" stroke="#2a1f3d" stroke-width="2"/>
+          <ellipse cx="160" cy="114" rx="9" ry="11" fill="#fff" stroke="#2a1f3d" stroke-width="2"/>
+          <g id="pupilas">
+            <ellipse cx="120" cy="115" rx="6.5" ry="7.5" fill="#4c3b8f"/>
+            <ellipse cx="160" cy="115" rx="6.5" ry="7.5" fill="#4c3b8f"/>
+            <ellipse cx="120" cy="116" rx="3.5" ry="4" fill="#2a1f3d"/>
+            <ellipse cx="160" cy="116" rx="3.5" ry="4" fill="#2a1f3d"/>
+            <circle cx="117.5" cy="111.5" r="2.2" fill="#fff"/>
+            <circle cx="157.5" cy="111.5" r="2.2" fill="#fff"/>
+          </g>
+        </g>
+        <path d="M112.3,92.9 A10,8 0 0 1 127.7,92.9" fill="none" stroke="#2a1f3d" stroke-width="2" stroke-linecap="round"/>
+        <path d="M152.3,92.9 A10,8 0 0 1 167.7,92.9" fill="none" stroke="#2a1f3d" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="108" cy="130" rx="7" ry="4" fill="#f4a6a6"/>
+        <ellipse cx="172" cy="130" rx="7" ry="4" fill="#f4a6a6"/>
+        <path id="boca-fechada" d="M147.5,136.7 A8,5 0 0 1 132.5,136.7" fill="none" stroke="#2a1f3d" stroke-width="2" stroke-linecap="round"/>
+        <g id="boca-aberta" style="display:none">
+          <ellipse id="boca" cx="140" cy="136" rx="7" ry="5" fill="#7a2e3b" stroke="#2a1f3d" stroke-width="2"/>
+          <ellipse id="lingua" cx="140" cy="139" rx="4" ry="2" fill="#e87882"/>
+        </g>
+        <path d="M80.9,84.3 A60,56 0 0 1 199.1,84.3" fill="none" stroke="#27272a" stroke-width="6" stroke-linecap="round"/>
+        <rect x="73" y="96" width="18" height="34" rx="8" fill="#27272a" stroke="#2a1f3d" stroke-width="2"/>
+        <rect x="189" y="96" width="18" height="34" rx="8" fill="#27272a" stroke="#2a1f3d" stroke-width="2"/>
+        <rect class="luz" x="78" y="103" width="8" height="20" rx="4"/>
+        <rect class="luz" x="194" y="103" width="8" height="20" rx="4"/>
+        <polyline points="84,126 100,140 118,142" fill="none" stroke="#27272a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle class="luz" cx="122" cy="142" r="4" stroke="#27272a" stroke-width="2"/>
+        <g id="ondas" fill="none" stroke-width="3" stroke-linecap="round">
+          <path id="onda1" d="M220.5,104.5 A12,12 0 0 1 220.5,121.5"/>
+          <path id="onda2" d="M226.8,98.2 A21,21 0 0 1 226.8,127.8"/>
+          <path id="onda3" d="M233.2,91.8 A30,30 0 0 1 233.2,134.2"/>
+        </g>
+      </g>
+    </g>
+    <g id="codigos">
+      <text x="62" y="186">&lt;/&gt;</text>
+      <text x="196" y="190">{ }</text>
+      <text x="74" y="194">01</text>
+      <text x="206" y="184">;</text>
+    </g>
+    <rect x="62" y="178" width="156" height="66" rx="8" fill="#d4d4d8" stroke="#2a1f3d" stroke-width="2"/>
+    <rect x="66" y="182" width="148" height="4" fill="#e4e4e7"/>
+    <circle id="logo" cx="140" cy="211" r="11"/>
+    <text x="140" y="215.5" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="ui-monospace, Menlo, monospace">M</text>
+    <rect x="44" y="242" width="192" height="10" rx="4" fill="#a1a1aa" stroke="#2a1f3d" stroke-width="2"/>
+  </svg>
+</div>
+<div id="legenda">Toque no microfone ou escreva</div>
+
+<main id="conversa" aria-live="polite"></main>
+
+<footer>
+  <input id="campo" placeholder="Escreva para a Maya…" autocomplete="off" enterkeyhint="send">
+  <button id="enviar" aria-label="Enviar">➤</button>
+  <button id="mic" aria-label="Falar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4"/>
+    </svg>
+  </button>
+</footer>
+
+<section id="painel" aria-label="Lembretes">
+  <h2>Lembretes</h2>
+  <div id="lista-lembretes" class="dica">Carregando…</div>
+  <div id="area-notificacoes"></div>
+  <button class="botao-largo" id="fechar-painel" style="background:#2a2a35">Fechar</button>
+</section>
+
+<audio id="player" playsinline></audio>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const CORES = { ouvindo: "#3b82f6", pensando: "#8b5cf6", falando: "#22d3ee", parado: "#3b82f6" };
+const SILENCIO = "data:audio/mpeg;base64,//OExAAAAAAAAAAAAFhpbmcAAAAPAAAABwAAAWgAJCQkJCQkJCQkJCQkJCRJSUlJSUlJSUlJSUlJSW1tbW1tbW1tbW1tbW1tkpKSkpKSkpKSkpKSkpKStra2tra2tra2tra2trbb29vb29vb29vb29vb2///////////////////AAAAPExBTUUzLjEwMAR4AAAAAAAAAAAVCCQEICEAAcwAAAFo3WBJTQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//MUxAAAAANIAAAAAExBTUUzLjEwMFVV//MUxAsAAANIAAAAAFVVVVVVVVVVVVVV//MUxBYAAANIAAAAAFVVVVVVVVVVVVVV//MUxCEAAANIAAAAAFVVVVVVVVVVVVVV//MUxCwAAANIAAAAAFVVVVVVVVVVVVVV//MUxDcAAANIAAAAAFVVVVVVVVVVVVVV//MUxEIAAANIAAAAAFVVVVVVVVVVVVVV";
+
+let estado = "parado";
+let vozLigada = localStorage.getItem("maya-voz") !== "nao";
+let gravador = null, partes = [], fluxoMic = null, limiteGravacao = null;
+let ctx = null, analisadorMic = null, analisadorFala = null, fonteFala = null;
+let ultimoAviso = Date.now() / 1000;
+
+// ---------------------------------------------------------------- estado e animação
+function mudar(novo, texto) {
+  estado = novo;
+  $("#avatar").setAttribute("class", novo);
+  document.documentElement.style.setProperty("--cor", CORES[novo] || CORES.parado);
+  if (texto !== undefined) $("#legenda").textContent = texto;
+}
+
+function nivel(analisador) {
+  if (!analisador) return 0;
+  const dados = new Uint8Array(analisador.fftSize);
+  analisador.getByteTimeDomainData(dados);
+  let soma = 0;
+  for (const v of dados) { const x = (v - 128) / 128; soma += x * x; }
+  return Math.min(1, Math.sqrt(soma / dados.length) * 4);
+}
+
+let nivelSuave = 0;
+function animar() {
+  const alvo = estado === "falando" ? nivel(analisadorFala) : estado === "ouvindo" ? nivel(analisadorMic) : 0;
+  nivelSuave += (alvo - nivelSuave) * 0.4;
+  const aberta = estado === "falando" && nivelSuave > 0.06;
+  $("#boca-fechada").style.display = aberta ? "none" : "";
+  $("#boca-aberta").style.display = aberta ? "" : "none";
+  if (aberta) {
+    const ry = 2 + nivelSuave * 9;
+    $("#boca").setAttribute("ry", ry.toFixed(1));
+    $("#boca").setAttribute("rx", (6 + nivelSuave * 2).toFixed(1));
+    $("#lingua").setAttribute("cy", (136 + ry * 0.45).toFixed(1));
+    $("#lingua").setAttribute("ry", (ry * 0.35).toFixed(1));
+  }
+  ["#onda1", "#onda2", "#onda3"].forEach((id, i) => {
+    $(id).style.opacity = Math.max(0.15, Math.min(1, nivelSuave * 1.8 - i * 0.3));
+  });
+  requestAnimationFrame(animar);
+}
+requestAnimationFrame(animar);
+
+// ---------------------------------------------------------------- áudio (o iPhone exige um toque antes)
+function prepararAudio() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    analisadorFala = ctx.createAnalyser();
+    analisadorFala.fftSize = 512;
+    fonteFala = ctx.createMediaElementSource($("#player"));
+    fonteFala.connect(analisadorFala);
+    analisadorFala.connect(ctx.destination);
+    $("#player").src = SILENCIO;  // "destrava" o player dentro do toque
+    $("#player").play().catch(() => {});
+  }
+  if (ctx.state === "suspended") ctx.resume();
+}
+
+async function falar(texto) {
+  const semLinks = texto.replace(/https?:\/\/\S+/g, "").trim();
+  if (!vozLigada || !semLinks) { mudar("parado", ""); return; }
+  try {
+    const r = await fetch("/api/voz", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texto: semLinks }) });
+    if (!r.ok) throw new Error();
+    const url = URL.createObjectURL(await r.blob());
+    const player = $("#player");
+    player.src = url;
+    mudar("falando", "");
+    player.onended = () => { mudar("parado", ""); URL.revokeObjectURL(url); };
+    await player.play();
+  } catch { mudar("parado", ""); }
+}
+
+// ---------------------------------------------------------------- conversa
+function escapar(t) {
+  return t.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function adicionar(quem, texto) {
+  const div = document.createElement("div");
+  div.className = "msg " + quem;
+  div.innerHTML = escapar(texto).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+  $("#conversa").appendChild(div);
+  $("#conversa").scrollTop = $("#conversa").scrollHeight;
+  guardarHistorico();
+}
+function guardarHistorico() {
+  try {
+    const itens = [...document.querySelectorAll(".msg")].slice(-40).map((m) => [m.classList[1], m.textContent]);
+    localStorage.setItem("maya-historico", JSON.stringify(itens));
+  } catch {}
+}
+function carregarHistorico() {
+  try {
+    for (const [quem, texto] of JSON.parse(localStorage.getItem("maya-historico") || "[]")) {
+      const div = document.createElement("div");
+      div.className = "msg " + quem;
+      div.innerHTML = escapar(texto).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+      $("#conversa").appendChild(div);
+    }
+    $("#conversa").scrollTop = $("#conversa").scrollHeight;
+  } catch {}
+}
+
+async function responderCom(promessa, mostrarPedido = true) {
+  mudar("pensando", "Pensando…");
+  try {
+    const r = await promessa;
+    const dados = await r.json();
+    if (!r.ok) throw new Error(dados.erro || "erro");
+    if (mostrarPedido && dados.pedido) adicionar("eu", dados.pedido);
+    adicionar("maya", dados.resposta);
+    await falar(dados.resposta);
+  } catch (e) {
+    adicionar("aviso", "Não consegui falar com a Maya no PC. Ele está ligado e com o Tailscale ativo?");
+    mudar("parado", "");
+  }
+}
+
+function enviarTexto() {
+  const texto = $("#campo").value.trim();
+  if (!texto) return;
+  prepararAudio();
+  $("#campo").value = "";
+  $("#campo").blur();
+  adicionar("eu", texto);
+  responderCom(fetch("/api/mensagem", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texto }) }), false);
+}
+
+// ---------------------------------------------------------------- microfone
+async function alternarGravacao() {
+  prepararAudio();
+  if (gravador && gravador.state === "recording") { gravador.stop(); return; }
+  $("#player").pause();
+  try {
+    fluxoMic = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch {
+    adicionar("aviso", "Preciso de permissão para usar o microfone. Toque em “aA” na barra do Safari > Ajustes do Site > Microfone.");
+    return;
+  }
+  const fonteMic = ctx.createMediaStreamSource(fluxoMic);
+  analisadorMic = ctx.createAnalyser();
+  analisadorMic.fftSize = 512;
+  fonteMic.connect(analisadorMic);
+
+  const tipo = MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "";
+  gravador = new MediaRecorder(fluxoMic, tipo ? { mimeType: tipo } : undefined);
+  partes = [];
+  gravador.ondataavailable = (e) => e.data.size && partes.push(e.data);
+  gravador.onstop = () => {
+    clearTimeout(limiteGravacao);
+    $("#mic").classList.remove("gravando");
+    fluxoMic.getTracks().forEach((t) => t.stop());
+    analisadorMic = null;
+    const audio = new Blob(partes, { type: gravador.mimeType || "audio/mp4" });
+    if (audio.size < 2000) { mudar("parado", "Não ouvi nada"); return; }
+    responderCom(fetch("/api/audio", { method: "POST", headers: { "Content-Type": audio.type }, body: audio }));
+  };
+  gravador.start();
+  $("#mic").classList.add("gravando");
+  mudar("ouvindo", "Estou ouvindo… toque de novo quando terminar");
+  limiteGravacao = setTimeout(() => gravador.state === "recording" && gravador.stop(), 30000);
+}
+
+// ---------------------------------------------------------------- lembretes e notificações
+async function abrirPainel() {
+  $("#painel").classList.add("aberto");
+  try {
+    const { lembretes } = await (await fetch("/api/lembretes")).json();
+    $("#lista-lembretes").innerHTML = lembretes.length ? lembretes.map((l) =>
+      `<div class="lembrete"><div>${escapar(l.mensagem)}<small>${escapar(l.quando)}</small></div>
+       <button data-id="${escapar(l.id)}">Cancelar</button></div>`).join("")
+      : "Nenhum lembrete. Peça: “me lembra de ligar pra minha mãe amanhã às 10h”.";
+  } catch { $("#lista-lembretes").textContent = "Não consegui carregar os lembretes."; }
+  montarNotificacoes();
+}
+
+function montarNotificacoes() {
+  const area = $("#area-notificacoes");
+  const instalado = window.navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  if (!instalado) {
+    area.innerHTML = `<p class="dica">Para receber os lembretes como notificação, instale a Maya:
+      toque em <b>Compartilhar</b> (o quadrado com a seta) e depois em <b>Adicionar à Tela de Início</b>.
+      Depois abra a Maya pelo ícone novo.</p>`;
+  } else if (!("PushManager" in window)) {
+    area.innerHTML = `<p class="dica">Este iPhone não suporta notificações de apps da web (precisa do iOS 16.4 ou mais novo).</p>`;
+  } else if (Notification.permission === "granted") {
+    area.innerHTML = `<p class="dica">✅ Notificações ativadas.</p><button class="botao-largo" id="testar">Enviar notificação de teste</button>`;
+    $("#testar").onclick = () => ativarNotificacoes(true);
+  } else {
+    area.innerHTML = `<button class="botao-largo" id="ativar">Ativar notificações</button>`;
+    $("#ativar").onclick = () => ativarNotificacoes(false);
+  }
+}
+
+function chaveParaBytes(base64) {
+  const preenchido = (base64 + "=".repeat((4 - (base64.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(atob(preenchido), (c) => c.charCodeAt(0));
+}
+
+async function ativarNotificacoes(soTestar) {
+  try {
+    const registro = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    if (!soTestar) {
+      const permissao = await Notification.requestPermission();
+      if (permissao !== "granted") { alert("Sem permissão, a Maya não consegue mandar notificações."); return; }
+    }
+    const { chave } = await (await fetch("/api/push/chave")).json();
+    const assinatura = await registro.pushManager.getSubscription() ||
+      await registro.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chaveParaBytes(chave) });
+    await fetch("/api/push/assinar", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(assinatura.toJSON()) });
+    await fetch("/api/push/teste", { method: "POST" });
+    montarNotificacoes();
+  } catch (e) {
+    alert("Não consegui ativar as notificações: " + e.message);
+  }
+}
+
+async function verificarAvisos() {
+  try {
+    const dados = await (await fetch("/api/avisos?desde=" + ultimoAviso)).json();
+    for (const a of dados.avisos) adicionar("aviso", "⏰ " + a.texto);
+    ultimoAviso = dados.agora;
+    $("#status").classList.add("online");
+    $("#status-texto").textContent = "conectada ao PC";
+  } catch {
+    $("#status").classList.remove("online");
+    $("#status-texto").textContent = "PC desconectado";
+  }
+}
+
+// ---------------------------------------------------------------- ligar tudo
+$("#mic").onclick = alternarGravacao;
+$("#enviar").onclick = enviarTexto;
+$("#campo").addEventListener("keydown", (e) => e.key === "Enter" && enviarTexto());
+$("#btn-lembretes").onclick = abrirPainel;
+$("#fechar-painel").onclick = () => $("#painel").classList.remove("aberto");
+$("#lista-lembretes").onclick = async (e) => {
+  const id = e.target.dataset && e.target.dataset.id;
+  if (!id) return;
+  await fetch("/api/lembretes/" + encodeURIComponent(id), { method: "DELETE" });
+  abrirPainel();
+};
+function atualizarBotaoSom() { $("#btn-som").textContent = vozLigada ? "🔊" : "🔇"; }
+$("#btn-som").onclick = () => {
+  vozLigada = !vozLigada;
+  localStorage.setItem("maya-voz", vozLigada ? "sim" : "nao");
+  if (!vozLigada) { $("#player").pause(); mudar("parado", ""); }
+  atualizarBotaoSom();
+};
+atualizarBotaoSom();
+carregarHistorico();
+mudar("parado");
+verificarAvisos();
+setInterval(() => document.visibilityState === "visible" && verificarAvisos(), 15000);
+document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && verificarAvisos());
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+</script>
+</body>
+</html>

@@ -9,13 +9,13 @@ import ctypes
 import datetime
 import re
 import subprocess
-import threading
 import urllib.parse
 import webbrowser
 
 import requests
 
 import config
+from maya import lembretes, memoria
 
 # ---------------------------------------------------------------------------
 # Funções
@@ -146,17 +146,42 @@ def ver_clima(cidade=None):
     )
 
 
-def criar_lembrete(minutos, mensagem):
-    from maya.falar import falar
+def criar_lembrete(mensagem, minutos=None, data_hora=None):
+    return lembretes.criar(mensagem, minutos, data_hora)
 
-    def avisar():
-        falar(f"Lembrete: {mensagem}")
 
-    timer = threading.Timer(float(minutos) * 60, avisar)
-    timer.daemon = True
-    timer.start()
-    hora = datetime.datetime.now() + datetime.timedelta(minutes=float(minutos))
-    return f"Lembrete criado para as {hora:%H:%M}: {mensagem}. (Ele é perdido se a Maya for fechada.)"
+def listar_lembretes():
+    return lembretes.listar_texto()
+
+
+def cancelar_lembrete(qual):
+    return lembretes.cancelar(qual)
+
+
+def guardar_memoria(fato):
+    return memoria.guardar(fato)
+
+
+def esquecer_memoria(trecho):
+    return memoria.esquecer(trecho)
+
+
+def ver_tela():
+    """Tira um print da tela do PC e devolve como imagem para a IA analisar."""
+    import base64
+    import io
+
+    from PIL import ImageGrab
+
+    imagem = ImageGrab.grab(all_screens=True).convert("RGB")
+    imagem.thumbnail((1568, 1568))  # tamanho bom para a IA, sem gastar à toa
+    buffer = io.BytesIO()
+    imagem.save(buffer, format="JPEG", quality=80)
+    dados = base64.standard_b64encode(buffer.getvalue()).decode()
+    return [
+        {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": dados}},
+        {"type": "text", "text": "Print da tela do PC agora."},
+    ]
 
 
 def desligar_computador(acao):
@@ -260,15 +285,56 @@ FERRAMENTAS = [
     },
     {
         "name": "criar_lembrete",
-        "description": "Cria um lembrete que a Maya fala em voz alta depois de alguns minutos.",
+        "description": "Cria um lembrete. Na hora, a Maya avisa em voz alta no PC e manda notificação no celular. "
+        "Use 'minutos' para daqui a X minutos, ou 'data_hora' para um dia e horário (veja a hora atual com ver_hora).",
         "input_schema": {
             "type": "object",
             "properties": {
-                "minutos": {"type": "number", "description": "Daqui a quantos minutos"},
                 "mensagem": {"type": "string", "description": "O que lembrar"},
+                "minutos": {"type": "number", "description": "Daqui a quantos minutos"},
+                "data_hora": {"type": "string", "description": "Formato AAAA-MM-DD HH:MM"},
             },
-            "required": ["minutos", "mensagem"],
+            "required": ["mensagem"],
         },
+    },
+    {
+        "name": "listar_lembretes",
+        "description": "Lista os lembretes marcados.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+    {
+        "name": "cancelar_lembrete",
+        "description": "Cancela um lembrete pelo código (ex.: a1b2c3) ou por uma parte do texto.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"qual": {"type": "string"}},
+            "required": ["qual"],
+        },
+    },
+    {
+        "name": "guardar_memoria",
+        "description": "Guarda para sempre algo importante sobre o usuário: nome, gostos, pessoas, rotina, "
+        "ou qualquer coisa que ele pedir para você lembrar. Escreva como uma frase curta.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"fato": {"type": "string", "description": "Ex.: O usuário se chama Brayan"}},
+            "required": ["fato"],
+        },
+    },
+    {
+        "name": "esquecer_memoria",
+        "description": "Apaga da memória de longo prazo as lembranças que contêm esse trecho.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"trecho": {"type": "string"}},
+            "required": ["trecho"],
+        },
+    },
+    {
+        "name": "ver_tela",
+        "description": "Tira um print da tela do PC para você ver o que está aberto, ler um erro, "
+        "ajudar com o que o usuário está fazendo etc.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
     },
     {
         "name": "desligar_computador",
@@ -293,6 +359,11 @@ FERRAMENTAS.append(
 
 FUNCOES = {
     "fechar_maya": fechar_maya,
+    "listar_lembretes": listar_lembretes,
+    "cancelar_lembrete": cancelar_lembrete,
+    "guardar_memoria": guardar_memoria,
+    "esquecer_memoria": esquecer_memoria,
+    "ver_tela": ver_tela,
     "ver_hora": ver_hora,
     "abrir_programa": abrir_programa,
     "abrir_site": abrir_site,
@@ -307,7 +378,8 @@ FUNCOES = {
 
 
 def executar(nome, argumentos):
-    """Executa a ferramenta pedida pela IA e devolve (texto, deu_erro)."""
+    """Executa a ferramenta pedida pela IA e devolve (resultado, deu_erro).
+    O resultado é um texto, ou uma lista de blocos (ex.: imagem do ver_tela)."""
     print(f"[ação] {nome} {argumentos or ''}")
     funcao = FUNCOES.get(nome)
     if funcao is None:

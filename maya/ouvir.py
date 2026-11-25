@@ -2,6 +2,7 @@
 
 import json
 import queue
+import threading
 import time
 
 import numpy as np
@@ -15,6 +16,7 @@ PASTA_VOSK = "modelos/vosk-model-small-pt-0.3"
 
 _whisper = None
 _modelo_vosk = None
+_trava_whisper = threading.Lock()
 
 
 def esperar_palavra_ativacao():
@@ -46,8 +48,9 @@ def esperar_palavra_ativacao():
                 return
 
 
-def gravar_pedido():
-    """Grava até você ficar em silêncio. Devolve o áudio como array float32."""
+def gravar_pedido(espera_inicial=5):
+    """Grava até você ficar em silêncio. Devolve o áudio como array float32,
+    ou None se ninguém falar nada nos primeiros `espera_inicial` segundos."""
     blocos = []
     duracao_bloco = 0.1
     tamanho = int(TAXA * duracao_bloco)
@@ -67,8 +70,8 @@ def gravar_pedido():
             else:
                 silencio += duracao_bloco
             # Para quando você falou e depois ficou em silêncio,
-            # ou se não disse nada por 5 segundos.
-            if (falou and silencio >= config.SILENCIO_PARA_PARAR) or (not falou and silencio >= 5):
+            # ou se não disse nada no começo.
+            if (falou and silencio >= config.SILENCIO_PARA_PARAR) or (not falou and silencio >= espera_inicial):
                 break
 
     if not falou:
@@ -78,12 +81,14 @@ def gravar_pedido():
 
 
 def transcrever(audio):
-    """Transforma o áudio em texto com o Whisper (roda no próprio notebook)."""
+    """Transforma o áudio em texto com o Whisper (roda no próprio notebook).
+    Aceita o áudio do microfone (array) ou um arquivo de áudio (ex.: gravado no iPhone)."""
     global _whisper
-    if _whisper is None:
-        from faster_whisper import WhisperModel
+    with _trava_whisper:  # PC e celular podem pedir ao mesmo tempo
+        if _whisper is None:
+            from faster_whisper import WhisperModel
 
-        print("[carregando o Whisper, só demora na primeira vez...]")
-        _whisper = WhisperModel(config.MODELO_WHISPER, device="cpu", compute_type="int8")
-    segmentos, _ = _whisper.transcribe(audio, language="pt", beam_size=1, vad_filter=True)
-    return " ".join(s.text for s in segmentos).strip()
+            print("[carregando o Whisper, só demora na primeira vez...]")
+            _whisper = WhisperModel(config.MODELO_WHISPER, device="cpu", compute_type="int8")
+        segmentos, _ = _whisper.transcribe(audio, language="pt", beam_size=1, vad_filter=True)
+        return " ".join(s.text for s in segmentos).strip()

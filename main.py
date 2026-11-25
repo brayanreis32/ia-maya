@@ -34,7 +34,7 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(os.path.join(PASTA, ".env"))
 
 import config  # noqa: E402
-from maya import estado, ferramentas  # noqa: E402
+from maya import estado, ferramentas, lembretes  # noqa: E402
 from maya.cerebro import Cerebro  # noqa: E402
 from maya.falar import bipe, falar  # noqa: E402
 
@@ -96,17 +96,24 @@ def modo_texto(cerebro):
 def modo_voz(cerebro):
     from maya.ouvir import esperar_palavra_ativacao, gravar_pedido, transcrever
 
+    conversa_continua = getattr(config, "CONVERSA_CONTINUA", True)
     falar("Oi, eu sou a Maya. É só me chamar.")
+    continuar = False  # depois de responder, ouve mais um pouco sem precisar dizer "Maya"
     while True:
         try:
-            estado.mudar("oculto")
-            print(f"\n[ouvindo... diga '{config.PALAVRAS_ATIVACAO[0]}']")
-            esperar_palavra_ativacao()
-
-            estado.mudar("ouvindo", "")
-            bipe()
-            print("[pode falar]")
-            audio = gravar_pedido()
+            if not continuar:
+                estado.mudar("oculto")
+                print(f"\n[ouvindo... diga '{config.PALAVRAS_ATIVACAO[0]}']")
+                esperar_palavra_ativacao()
+                estado.mudar("ouvindo", "")
+                bipe()
+                print("[pode falar]")
+                audio = gravar_pedido()
+            else:
+                estado.mudar("ouvindo", "")
+                print("[continuo ouvindo...]")
+                audio = gravar_pedido(espera_inicial=4)
+            continuar = False
             if audio is None:
                 print("[não ouvi nada]")
                 continue
@@ -121,6 +128,7 @@ def modo_voz(cerebro):
             falar(cerebro.responder(pedido))
             if ferramentas.pedido_para_fechar:
                 sair()
+            continuar = conversa_continua
         except Exception:
             traceback.print_exc()
             falar("Ops, tive um problema. Tente de novo.")
@@ -131,9 +139,22 @@ def main():
         print("A Maya já está aberta (veja o ícone perto do relógio).")
         return
     print(f"Maya iniciando (cérebro: {config.CEREBRO})")
-    cerebro = Cerebro()
+    cerebro = Cerebro("pc")
     assistente = modo_texto if "--texto" in sys.argv else modo_voz
     icone_bandeja()
+
+    # Lembretes salvos em arquivo: na hora certa, ela fala no PC (e avisa o celular, se ligado)
+    lembretes.ao_disparar(lambda texto: falar(f"Lembrete: {texto}"))
+    lembretes.iniciar()
+
+    # App do celular (conversa separada da do PC, mas com a mesma memória e lembretes)
+    if getattr(config, "APP_CELULAR", True):
+        try:
+            from maya import servidor
+
+            servidor.iniciar(Cerebro("celular"))
+        except Exception as erro:
+            print(f"[aviso] App do celular desligado: {erro}")
 
     try:
         estilo = getattr(config, "ANIMACAO", "avatar")

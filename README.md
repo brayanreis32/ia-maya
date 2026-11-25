@@ -14,7 +14,13 @@ A voz é feminina e neural (Francisca, a mesma do Microsoft Edge), gratuita, mas
 | Texto para voz | Voz feminina "Francisca" (edge-tts); sem internet, usa o Piper | Francisca não, Piper sim |
 | Ações | `maya/ferramentas.py` | Quase todas |
 
-**O que ela já sabe fazer:** dizer a hora e a data, abrir programas e sites, pesquisar no Google, tocar música no YouTube, buscar no Spotify, mudar o volume, ver o clima, criar lembretes e desligar, reiniciar ou bloquear o PC.
+**O que ela já sabe fazer:** dizer a hora e a data, abrir programas e sites, pesquisar no Google, tocar música no YouTube, buscar no Spotify, mudar o volume, ver o clima, criar lembretes e desligar, reiniciar ou bloquear o PC. Com o cérebro Claude, ela também:
+- **pesquisa na internet** em tempo real (notícias, jogos, preços);
+- **lembra de você**: nome, gostos e o que você pedir para guardar (arquivo `memoria.json`);
+- **vê a sua tela**: *"Maya, o que é esse erro na minha tela?"*;
+- **continua ouvindo** alguns segundos depois de responder, sem você precisar dizer "Maya" de novo.
+
+Os lembretes ficam salvos (`lembretes.json`), sobrevivem a reinícios e avisam no PC e no celular.
 
 Exemplos: *"Maya… que horas são?"*, *"Maya… abre a calculadora"*, *"Maya… toca Legião Urbana no YouTube"*, *"Maya… aumenta o volume"*, *"Maya… me lembra de tirar o bolo do forno em 20 minutos"*, *"Maya… vai chover hoje no Rio?"*
 
@@ -77,6 +83,21 @@ Isso cria o atalho **Maya** na Área de Trabalho, faz ela iniciar sozinha quando
 
 ---
 
+### 7. App no iPhone (opcional)
+O iPhone conversa com a Maya do PC por uma rede privada e gratuita, o **Tailscale**. Funciona de qualquer lugar (4G, outra casa), sem deixar o seu PC aberto para a internet. O PC precisa estar ligado e com a Maya rodando.
+
+1. Instale o Tailscale **no PC** (https://tailscale.com/download/windows) e **no iPhone** (App Store) e entre com a **mesma conta** nos dois.
+2. No PC, com a Maya rodando e o ambiente ativado:
+   ```bat
+   python configurar_celular.py
+   ```
+   Ele mostra um endereço (`https://...ts.net`) e abre um QR code. Se aparecer um link pedindo para ativar o HTTPS, abra-o, ative e rode o comando de novo.
+3. No iPhone, com o Tailscale ligado, aponte a câmera para o QR code (ou abra o endereço no **Safari**).
+4. Toque em **Compartilhar** → **Adicionar à Tela de Início**. Agora a Maya é um app no seu iPhone.
+5. Abra o app pelo ícone, toque em ⏰ → **Ativar notificações** para receber os lembretes.
+
+No app: toque no microfone para falar (e de novo para terminar) ou escreva. As ações (tocar música, abrir programas, ver a tela, desligar) acontecem **no PC**, então dá para controlar o computador de longe.
+
 ## Personalizando
 
 - **Programas:** adicione os seus no dicionário `PROGRAMAS` do `config.py` (nome falado → comando).
@@ -97,5 +118,6 @@ Isso cria o atalho **Maya** na Área de Trabalho, faz ela iniciar sozinha quando
 
 ## Limitações
 - Ela só faz o que estiver em `maya/ferramentas.py`. Não tem casa inteligente nem compras.
-- Os lembretes ficam na memória: somem se a Maya for fechada.
 - O Spotify abre a busca, mas você precisa apertar o play (tocar direto exige a API paga do Spotify).
+- O app do celular só funciona com o PC ligado e a Maya aberta.
+- A pesquisa na internet, a memória inteligente e a visão da tela precisam do cérebro Claude.
