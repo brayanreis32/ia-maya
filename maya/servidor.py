@@ -14,7 +14,7 @@ import threading
 import time
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 
 import config
 from maya import lembretes
@@ -26,6 +26,7 @@ _trava_push = threading.Lock()
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _cerebro = None
+_cerebro_siri = None
 _avisos_pendentes = []  # lembretes que o app mostra ao abrir (além da notificação)
 
 
@@ -119,6 +120,21 @@ async def mensagem(request: Request):
     return {"pedido": texto, "resposta": resposta}
 
 
+@app.post("/api/siri")
+async def siri(request: Request):
+    """Usado pelo Atalho "Maya" do iPhone: recebe o que você ditou para a Siri e devolve
+    só o texto da resposta, para a Siri ler em voz alta."""
+    try:
+        dados = await request.json()
+        texto = (dados.get("texto") or "").strip()[:2000]
+    except ValueError:
+        texto = (await request.body()).decode("utf-8", "ignore").strip()[:2000]
+    if not texto:
+        return PlainTextResponse("Não ouvi nada. Pode repetir?")
+    resposta = await asyncio.to_thread(_cerebro_siri.responder, texto)
+    return PlainTextResponse(resposta)
+
+
 @app.post("/api/audio")
 async def audio(request: Request):
     """Recebe a gravação do iPhone, transcreve com o Whisper e responde."""
@@ -200,10 +216,13 @@ async def teste_push():
 # ---------------------------------------------------------------------------- iniciar
 def iniciar(cerebro):
     """Liga o servidor numa thread separada, só para o próprio PC (o Tailscale leva até o celular)."""
-    global _cerebro
+    global _cerebro, _cerebro_siri
     import uvicorn
 
+    from maya.cerebro import Cerebro
+
     _cerebro = cerebro
+    _cerebro_siri = Cerebro("siri")  # conversa própria, com respostas feitas para ouvir
     _chave_vapid()  # cria a chave das notificações na primeira vez
     lembretes.ao_disparar(lambda texto: notificar_celular(f"Lembrete: {texto}"))
     porta = getattr(config, "PORTA_CELULAR", 8765)

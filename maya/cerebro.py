@@ -20,6 +20,9 @@ O pedido pode vir do reconhecimento de voz e ter palavras erradas: interprete pe
 
 CANAIS = {
     "pc": "O usuário está falando com você por voz, no computador. Não escreva links.",
+    "siri": "O usuário está falando com você pela Siri no iPhone, talvez longe do computador e com o celular "
+    "bloqueado. A sua resposta será lida em voz alta: não escreva links nem números de telefone longos. "
+    "As ferramentas (abrir programas, tocar música, volume, ver a tela, desligar) agem no computador.",
     "celular": "O usuário está falando com você pelo app da Maya no iPhone, talvez longe do computador. "
     "As ferramentas (abrir programas, tocar música, volume, ver a tela, desligar) agem no computador, "
     "não no celular. Se ajudar, você pode incluir um link na resposta: ele aparece clicável no app.",
@@ -36,7 +39,7 @@ class Cerebro:
         self.sistema = ""
         self.ultima_vez = 0.0
         self.trava = threading.Lock()  # um pedido de cada vez por conversa
-        self.ferramentas = [f for f in ferramentas.FERRAMENTAS if not (canal == "celular" and f["name"] == "fechar_maya")]
+        self.ferramentas = [f for f in ferramentas.FERRAMENTAS if not (canal != "pc" and f["name"] == "fechar_maya")]
         if config.CEREBRO == "claude":
             import anthropic
 

@@ -98,6 +98,19 @@ O iPhone conversa com a Maya do PC por uma rede privada e gratuita, o **Tailscal
 
 No app: toque no microfone para falar (e de novo para terminar) ou escreva. As ações (tocar música, abrir programas, ver a tela, desligar) acontecem **no PC**, então dá para controlar o computador de longe.
 
+### 8. Falar com a Maya pela Siri (mesmo com o iPhone bloqueado)
+O iPhone só deixa a Siri ouvir com a tela bloqueada, então a Siri vira a "porta de entrada": você diz **"E aí Siri, Maya"**, fala o pedido, e a Maya responde em voz alta.
+
+1. No iPhone, abra o app **Atalhos** → **+** (novo atalho).
+2. Adicione a ação **Ditar Texto** (idioma: Português (Brasil); Parar de Ouvir: Após Pausa).
+3. Adicione **Obter Conteúdo do URL**:
+   - URL: `https://SEU-PC.SUA-REDE.ts.net/api/siri` (o endereço que o `configurar_celular.py` mostrou, com `/api/siri` no fim)
+   - Método: **POST** · Corpo da Solicitação: **JSON** · adicione um campo de **Texto** com a chave `texto` e o valor **Texto Ditado**.
+4. Adicione **Falar Texto** com **Conteúdo do URL**.
+5. Renomeie o atalho para **Maya**.
+6. No app do Tailscale, ative **VPN On Demand** (ou deixe sempre conectado), para a Siri achar o PC mesmo com o celular bloqueado.
+7. Em Ajustes → Siri, ative **Permitir Siri Quando Bloqueado**.
+
 ## Personalizando
 
 - **Programas:** adicione os seus no dicionário `PROGRAMAS` do `config.py` (nome falado → comando).
