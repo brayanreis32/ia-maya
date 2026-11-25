@@ -135,6 +135,24 @@ async def siri(request: Request):
     return PlainTextResponse(resposta)
 
 
+@app.post("/api/siri/voz")
+async def siri_voz(request: Request):
+    """Igual ao /api/siri, mas devolve a resposta já falada com a voz da Maya (mp3),
+    para o Atalho tocar com a ação "Reproduzir Som"."""
+    try:
+        dados = await request.json()
+        texto = (dados.get("texto") or "").strip()[:2000]
+    except ValueError:
+        texto = (await request.body()).decode("utf-8", "ignore").strip()[:2000]
+    resposta = "Não ouvi nada. Pode repetir?"
+    if texto:
+        resposta = await asyncio.to_thread(_cerebro_siri.responder, texto)
+    audio = await _gerar_voz(resposta)
+    if audio is None:  # sem a voz online: devolve o texto, para pelo menos aparecer na tela
+        return PlainTextResponse(resposta)
+    return Response(audio, media_type="audio/mpeg", headers={"Content-Disposition": 'inline; filename="maya.mp3"'})
+
+
 @app.post("/api/audio")
 async def audio(request: Request):
     """Recebe a gravação do iPhone, transcreve com o Whisper e responde."""
@@ -150,14 +168,10 @@ async def audio(request: Request):
     return {"pedido": pedido, "resposta": resposta}
 
 
-@app.post("/api/voz")
-async def voz(request: Request):
-    """Gera a fala da resposta (voz feminina) para tocar no celular."""
+async def _gerar_voz(texto):
+    """Transforma o texto na voz feminina da Maya (mp3). Devolve None se falhar."""
     import edge_tts
 
-    texto = ((await request.json()).get("texto") or "").strip()[:1500]
-    if not texto:
-        return Response(status_code=400)
     comunicacao = edge_tts.Communicate(
         texto,
         getattr(config, "VOZ_EDGE", "pt-BR-FranciscaNeural"),
@@ -170,8 +184,20 @@ async def voz(request: Request):
                 partes.append(pedaco["data"])
     except Exception as erro:
         print(f"[aviso] Voz para o celular falhou: {erro}")
+        return None
+    return b"".join(partes) or None
+
+
+@app.post("/api/voz")
+async def voz(request: Request):
+    """Gera a fala da resposta (voz feminina) para tocar no celular."""
+    texto = ((await request.json()).get("texto") or "").strip()[:1500]
+    if not texto:
+        return Response(status_code=400)
+    audio = await _gerar_voz(texto)
+    if audio is None:
         return Response(status_code=502)
-    return Response(b"".join(partes), media_type="audio/mpeg")
+    return Response(audio, media_type="audio/mpeg")
 
 
 @app.get("/api/lembretes")

@@ -106,7 +106,7 @@ O iPhone só deixa a Siri ouvir com a tela bloqueada, então a Siri vira a "port
 3. Adicione **Obter Conteúdo do URL**:
    - URL: `https://SEU-PC.SUA-REDE.ts.net/api/siri` (o endereço que o `configurar_celular.py` mostrou, com `/api/siri` no fim)
    - Método: **POST** · Corpo da Solicitação: **JSON** · adicione um campo de **Texto** com a chave `texto` e o valor **Texto Ditado**.
-4. Adicione **Falar Texto** com **Conteúdo do URL**.
+4. Adicione **Reproduzir Som** com **Conteúdo do URL** e troque o fim do URL do passo 3 para `/api/siri/voz`: assim a resposta vem com a voz da Maya. (Se preferir a voz da Siri, use `/api/siri` com a ação **Falar Texto**.)
 5. Renomeie o atalho para **Maya**.
 6. No app do Tailscale, ative **VPN On Demand** (ou deixe sempre conectado), para a Siri achar o PC mesmo com o celular bloqueado.
 7. Em Ajustes → Siri, ative **Permitir Siri Quando Bloqueado**.
