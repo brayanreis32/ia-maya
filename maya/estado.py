@@ -6,6 +6,7 @@ import time
 atual = "oculto"
 texto = ""
 nivel = 0.0  # volume de 0 a 1 (microfone ao ouvir, voz dela ao falar)
+operando = False  # True enquanto ela mexe no mouse/teclado (a animação se esconde)
 
 # Envelope de volume da fala, para a bolha pulsar junto com a voz
 _envelope = None

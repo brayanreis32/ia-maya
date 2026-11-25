@@ -37,10 +37,56 @@ def abrir_programa(nome):
                 comando = valor
                 break
     if comando is None:
-        conhecidos = ", ".join(config.PROGRAMAS)
-        return f"Não conheço o programa '{nome}'. Programas que sei abrir: {conhecidos}."
+        return _abrir_pelo_menu_iniciar(nome)
     subprocess.Popen(comando, shell=True)
     return f"Abri {nome}."
+
+
+def _abrir_pelo_menu_iniciar(nome):
+    """Abre qualquer app instalado: aperta a tecla Windows, digita o nome e dá Enter."""
+    import time
+
+    import pyautogui
+    import pyperclip
+
+    pyautogui.press("win")
+    time.sleep(0.9)
+    pyperclip.copy(nome)
+    pyautogui.hotkey("ctrl", "v")
+    time.sleep(1.2)
+    pyautogui.press("enter")
+    return f"Procurei '{nome}' no menu Iniciar e abri o primeiro resultado."
+
+
+def enviar_whatsapp(numero, mensagem):
+    """Abre a conversa no WhatsApp do PC com a mensagem pronta e envia."""
+    import os
+    import time
+
+    import pyautogui
+
+    digitos = "".join(c for c in numero if c.isdigit())
+    if len(digitos) <= 11:  # número brasileiro sem o código do país
+        digitos = "55" + digitos
+    os.startfile(f"whatsapp://send?phone={digitos}&text={urllib.parse.quote(mensagem)}")
+    time.sleep(7)  # tempo para o WhatsApp abrir a conversa
+    pyautogui.press("enter")
+    return f"Enviei pelo WhatsApp para {numero}: {mensagem}"
+
+
+def fazer_ligacao(numero):
+    """Liga pelo app 'Vincular ao Celular' (Phone Link) do Windows, conectado ao iPhone."""
+    import os
+
+    digitos = "".join(c for c in numero if c.isdigit() or c == "+")
+    os.startfile(f"tel:{digitos}")
+    return f"Abri a ligação para {numero} no app Vincular ao Celular. Se ele pedir, confirme no PC."
+
+
+def usar_computador(tarefa):
+    from maya import operador
+
+    return operador.usar_computador(tarefa)
 
 
 def abrir_site(endereco):
@@ -219,7 +265,8 @@ FERRAMENTAS = [
     },
     {
         "name": "abrir_programa",
-        "description": "Abre um programa no computador. Programas conhecidos: " + ", ".join(config.PROGRAMAS) + ".",
+        "description": "Abre qualquer programa ou app instalado no computador (pelo nome). Atalhos conhecidos: "
+        + ", ".join(config.PROGRAMAS) + ".",
         "input_schema": {
             "type": "object",
             "properties": {"nome": {"type": "string", "description": "Nome do programa, ex.: calculadora"}},
@@ -348,6 +395,43 @@ FERRAMENTAS = [
     },
 ]
 
+FERRAMENTAS += [
+    {
+        "name": "usar_computador",
+        "description": "Usa o computador como uma pessoa (vê a tela, clica, digita) para fazer qualquer tarefa "
+        "que as outras ferramentas não fazem: entrar em apps e sites, procurar um contato e mandar mensagem, "
+        "preencher campos, mexer em configurações etc. Descreva a tarefa completa e detalhada. Se a tarefa "
+        "envia, publica, liga, compra ou apaga algo, pergunte antes ao usuário e só chame depois que ele confirmar, "
+        "escrevendo na tarefa 'o usuário confirmou'. Demora de alguns segundos a alguns minutos.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"tarefa": {"type": "string"}},
+            "required": ["tarefa"],
+        },
+    },
+    {
+        "name": "enviar_whatsapp",
+        "description": "Envia uma mensagem de WhatsApp pelo PC para um número de telefone (com DDD). "
+        "Se o usuário disser só o nome, procure o número na memória; se não houver, use usar_computador. "
+        "SEMPRE confirme com o usuário o destinatário e o texto antes de enviar.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"numero": {"type": "string"}, "mensagem": {"type": "string"}},
+            "required": ["numero", "mensagem"],
+        },
+    },
+    {
+        "name": "fazer_ligacao",
+        "description": "Faz uma ligação telefônica pelo PC (app Vincular ao Celular ligado ao iPhone). "
+        "Confirme o número com o usuário antes.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"numero": {"type": "string"}},
+            "required": ["numero"],
+        },
+    },
+]
+
 FERRAMENTAS.append(
     {
         "name": "fechar_maya",
@@ -359,6 +443,9 @@ FERRAMENTAS.append(
 
 FUNCOES = {
     "fechar_maya": fechar_maya,
+    "usar_computador": usar_computador,
+    "enviar_whatsapp": enviar_whatsapp,
+    "fazer_ligacao": fazer_ligacao,
     "listar_lembretes": listar_lembretes,
     "cancelar_lembrete": cancelar_lembrete,
     "guardar_memoria": guardar_memoria,

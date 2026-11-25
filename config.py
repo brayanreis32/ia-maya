@@ -18,6 +18,10 @@ MODELO_OLLAMA = "qwen2.5:3b"
 # Para gastar bem menos, troque por "claude-haiku-5-5".
 MODELO_CLAUDE = "claude-opus-5-5"
 
+# Modelo usado quando a Maya mexe no computador sozinha (vê a tela, clica, digita).
+# None = o mesmo do MODELO_CLAUDE. "claude-sonnet-5-5" acerta mais em tarefas difíceis, mas custa mais.
+MODELO_COMPUTADOR = None
+
 # Pesquisa na internet (notícias, resultados, preços). Só funciona com o cérebro "claude".
 # Custa cerca de 1 centavo de dólar por pesquisa, além do uso normal.
 PESQUISA_WEB = True

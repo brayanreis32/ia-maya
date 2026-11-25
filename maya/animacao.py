@@ -75,7 +75,7 @@ class Animacao:
         modo = estado.atual
 
         # Aparece / some suavemente
-        alvo_opacidade = 0.0 if modo == "oculto" else 1.0
+        alvo_opacidade = 0.0 if modo == "oculto" or estado.operando else 1.0
         self.opacidade += (alvo_opacidade - self.opacidade) * 0.2
         if alvo_opacidade > 0 and not self.visivel:
             self.raiz.deiconify()

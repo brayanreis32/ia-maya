@@ -94,7 +94,7 @@ class Avatar:
     def _quadro(self):
         agora = time.time()
         modo = estado.atual
-        alvo = 0.0 if modo == "oculto" else 1.0
+        alvo = 0.0 if modo == "oculto" or estado.operando else 1.0
         self.opacidade += (alvo - self.opacidade) * 0.18
         self.entrada += ((1 - alvo) - self.entrada) * 0.18
 

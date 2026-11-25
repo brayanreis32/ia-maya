@@ -20,6 +20,9 @@ A voz é feminina e neural (Francisca, a mesma do Microsoft Edge), gratuita, mas
 - **vê a sua tela**: *"Maya, o que é esse erro na minha tela?"*;
 - **continua ouvindo** alguns segundos depois de responder, sem você precisar dizer "Maya" de novo.
 
+- **usa o computador sozinha**: vê a tela, clica e digita para fazer o que não tem ferramenta pronta (*"entra no Discord e abre o servidor X"*, *"procura o contato da Ana no WhatsApp e manda oi"*). Para parar na hora, jogue o mouse no **canto superior esquerdo** da tela;
+- **manda WhatsApp e faz ligações** (pelo WhatsApp do PC e pelo app Vincular ao Celular). Antes de enviar, ligar, comprar ou apagar algo, ela sempre pergunta se pode.
+
 Os lembretes ficam salvos (`lembretes.json`), sobrevivem a reinícios e avisam no PC e no celular.
 
 Exemplos: *"Maya… que horas são?"*, *"Maya… abre a calculadora"*, *"Maya… toca Legião Urbana no YouTube"*, *"Maya… aumenta o volume"*, *"Maya… me lembra de tirar o bolo do forno em 20 minutos"*, *"Maya… vai chover hoje no Rio?"*
